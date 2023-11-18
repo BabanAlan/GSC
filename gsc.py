@@ -20,7 +20,7 @@ def faceit_csgo(nickname):
         for i in soup_stats:
             stats.append(i.text)
         stats.append(soup_img["src"])
-        print(stats)
+        # print(stats)
         return stats
 
     else:
