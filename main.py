@@ -1,25 +1,97 @@
 import discord
+import gsc
 from discord import app_commands
-from discord.ext import commands
-from discord_slash import SlashCommand
 from config import settings
+import categories
 
-import discord                     
-from discord.ext import commands
-import discord_slash    
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
 
-
-bot = commands.Bot(command_prefix='!')
-
-slash = discord_slash.SlashCommand(bot, sync_commands=True)
-
-@bot.event
+@client.event
 async def on_ready():
-    print("Bot is online")
+    await tree.sync(guild = discord.Object(id = settings['id']))
+    print(f"Logged in as {client.user} (ID: {client.user.id})")
 
-@slash.slash(name="test", description="Those burgers look tasty",
-             options=[discord_slash.manage_commands.create_option(name="first_option", description="Please enter what you want on your burger", option_type=3, required=False)])
-async def test(ctx: discord_slash.SlashContext, first_option): 
-    await ctx.send(f'I am now gonna get you a burger with {first_option}')
 
-bot.run("ODE0MzIyMTU5Mzc5MjgzOTY4.GQFR7O.nNaEzoBm76pI_LOqaGmM6vtJ4gGvRh2BjPoFAM")
+@tree.command(name = "facsgo", description = "Shows faceit CS:GO stats", guild=discord.Object(id=731480774209175552)) 
+async def ds_fcsgo(interaction, nick: str):
+    await interaction.response.defer()
+
+    try:
+        stats = gsc.faceit_csgo(nick)
+        embed = discord.Embed(
+            title = "⠀",
+            description = "Main stats",
+            color = 0xFF5733
+        )
+        embed.set_author(name=f"{nick}'s stats", icon_url=stats[12])
+
+        for i in range(6):
+            embed.add_field(name = categories.fcsgo_category[i], value = stats[i], inline = True)
+        
+        embed.add_field(name = "⠀", value = "Last 10 matches average stats", inline = False)
+       
+        for i in range(6, 12):
+            embed.add_field(name = categories.fcsgo_category[i], value = stats[i], inline = True)
+
+        await interaction.followup.send(embed=embed)
+
+    except:
+        await client.get_channel(settings["channel"]).send("You bruh")
+
+
+@tree.command(name = "osu", description = "Shows OSU! stats", guild=discord.Object(id=settings["id"])) 
+async def ds_osu(interaction, nick: str):
+    await interaction.response.defer()
+
+    try:
+        stats = gsc.osu(nick)
+        embed = discord.Embed(
+            title = "⠀",
+            description = "Main stats",
+            color = 0xAC396D
+        )
+        # embed.set_author(name=f"{nick}'s stats", icon_url=stats[15])
+
+        for i in range(5):
+            embed.add_field(name = categories.osu_category[i], value = stats[i], inline = True)
+        
+        embed.add_field(name = "⠀", value = "Marks", inline = False)
+       
+        for i in range(5, 10):
+            embed.add_field(name = categories.osu_category[i], value = stats[i], inline = True)
+
+        embed.add_field(name = "⠀", value = "Other stats", inline = False)
+       
+        for i in range(10, 15):
+            embed.add_field(name = categories.osu_category[i], value = stats[i], inline = True)
+
+        await interaction.followup.send(embed=embed)
+
+    except:
+        await client.get_channel(975565397598306354).send("You bruh")
+
+
+@tree.command(name = "fort", description = "Shows this fortnite seasons stats", guild=discord.Object(id=731480774209175552)) 
+async def ds_fort(interaction, nick: str):
+    await interaction.response.defer()
+
+    try:
+        stats = gsc.fort(nick)
+        embed = discord.Embed(
+            title = "⠀",
+            description = "This seasons stats",
+            color = 0x4DABE7
+        )
+        embed.set_author(name=f"{nick}'s stats", icon_url="https://upload.wikimedia.org/wikipedia/commons/7/7c/Fortnite_F_lettermark_logo.png?20210818022222")
+
+        for i in range(6):
+            embed.add_field(name = categories.fort_category[i], value = stats[i], inline = True)
+        
+        await interaction.followup.send(embed=embed)
+
+    except:
+        await client.get_channel(settings['channel']).send("You bruh")
+
+client.run(settings["token"])
