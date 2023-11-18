@@ -95,3 +95,4 @@ async def ds_fort(interaction, nick: str):
         await client.get_channel(settings['channel']).send("You bruh")
 
 client.run(settings["token"])
+# test
